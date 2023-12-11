@@ -35,7 +35,7 @@ export const DeleteQuestion = async (id: string) => {
 
 export const UpdateQuestion = async (data: any, id: string) => {
     try {
-        return await axios.patch(`http://localhost:8000/v1/question/${id}`, data);
+        return await axios.put(`http://localhost:8000/v1/question/${id}`, data);
     } catch (error) {
         console.log(error);
     }

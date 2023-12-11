@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import Select from "react-select";
 import { AddNewQuestion } from "../services/api";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const typeOptions = [
   { value: "text", label: "Text" },
@@ -25,6 +26,7 @@ const sequenceOption = [
 ];
 
 export default function AddQuestion() {
+  const navigate = useNavigate();
   // question answer
   const [answer, setAnswer] = useState(null);
 
@@ -85,6 +87,7 @@ export default function AddQuestion() {
     setAnswer(null);
     setselectedRequirement(null);
     alert("Successfully added");
+    navigate("/");
   });
 
   const handleChange = (selectedQueType) => {

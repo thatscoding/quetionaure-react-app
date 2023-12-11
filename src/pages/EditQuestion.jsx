@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
-import { AddNewQuestion, FindQuesById } from "../services/api";
+import { AddNewQuestion, FindQuesById, UpdateQuestion } from "../services/api";
 import { Link } from "react-router-dom";
 import HashLoader from "react-spinners/HashLoader";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const typeOptions = [
   { value: "text", label: "Text" },
@@ -27,6 +28,7 @@ const sequenceOption = [
 ];
 
 export default function AddQuestion() {
+  const navigate = useNavigate();
   const { id } = useParams();
   // question answer
   const [answer, setAnswer] = useState(null);
@@ -58,6 +60,23 @@ export default function AddQuestion() {
       const res = await FindQuesById(id);
       console.log(res?.data.doc);
       setData(res?.data.doc);
+      const temp = res?.data.doc;
+
+      setValue("QueName", temp.title);
+
+      if (temp.options.length > 0) {
+        setselectedOptions(temp.options);
+        setAnswer(temp.answer);
+      }
+
+      const obj = typeOptions.find((d) => d.value == temp.type);
+      setselectedQueType(obj);
+
+      const obj2 = genderoptions.find((d) => d.value == temp.required);
+      setselectedRequirement(obj2);
+
+      const obj3 = sequenceOption.find((d) => d.value == temp.order);
+      setSelectedSeqeunce(obj3);
       setLoading(false);
     }
     getData();
@@ -99,14 +118,15 @@ export default function AddQuestion() {
   const onSubmit = handleSubmit(async (data) => {
     console.log(data);
     console.log(selectedQueType);
-    const res = await AddNewQuestion(data);
+    const res = await UpdateQuestion(data, id);
     console.log(res);
     reset();
     setselectedQueType(null);
     setSelectedSeqeunce(null);
     setAnswer(null);
     setselectedRequirement(null);
-    alert("Successfully added");
+    alert("Successfully Updated");
+    navigate("/");
   });
 
   const handleChange = (selectedQueType) => {
@@ -189,6 +209,7 @@ export default function AddQuestion() {
                       onKeyDown={handleKeyDown}
                       isSearchable
                       placeholder="Type Option and press Enter to add the next option"
+                      required
                     />
                   </div>
                 )}

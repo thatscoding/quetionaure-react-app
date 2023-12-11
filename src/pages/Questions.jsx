@@ -89,7 +89,7 @@ function Questions() {
                                   type="radio"
                                   checked={selectedAnswer === opt.value}
                                   value={opt.value}
-                                  onChange={handleAnserChange}
+                                  onChange={(e) => checkAnswer(e, d.answer)}
                                 />
                                 <span>{opt.value}</span>
                               </div>
@@ -143,6 +143,17 @@ function Questions() {
                         <input type="file" />
                       </div>
                     )}
+
+                    <details>
+                      <summary className="border border-gray-400 p-1 w-40 flex justify-center items-center rounded mt-4 font-bold">
+                        ▶️ Show Answer
+                      </summary>
+                      <div className="">
+                        <p className="pl-6 font-bold capitalize">
+                          Answer : {d.answer}
+                        </p>
+                      </div>
+                    </details>
                   </div>
                 ))}
               </div>
