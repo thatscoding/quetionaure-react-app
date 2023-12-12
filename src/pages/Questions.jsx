@@ -6,10 +6,12 @@ import { MdDeleteForever } from "react-icons/md";
 import { RiFileEditFill } from "react-icons/ri";
 
 function Questions() {
-  const [data, setData] = useState([]);
+  const [quizData, setQuizData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState([]);
+  const [isFormSubmitted, setFormSubmitted] = useState(false);
   const [refetch, setRefetch] = useState(true);
+  const [cal, setCal] = useState(false);
 
   const handleAnserChange = (event) => {
     setSelectedAnswer(event.target.value);
@@ -19,7 +21,7 @@ function Questions() {
     async function getData() {
       const res = await GetAllQuestions();
       console.log(res?.data.docs);
-      setData(res?.data.docs);
+      setQuizData(res?.data.docs);
       setLoading(false);
     }
     getData();
@@ -32,6 +34,28 @@ function Questions() {
     setRefetch(!refetch);
     alert("successfully deleted.");
     setLoading(true);
+  };
+
+  const checkAnswer = (e, ans) => {
+    console.log(e.target.value, "=>", ans);
+    setSelectedAnswer((prevSelectedAnswer) => [...prevSelectedAnswer, ans]);
+  };
+
+  const handleOptionChange = (selectedOption, questionId) => {
+    console.log(selectedOption, questionId);
+    setQuizData((prevQuizData) =>
+      prevQuizData.map((question) =>
+        question._id === questionId
+          ? { ...question, selectedAnswer: selectedOption }
+          : question
+      )
+    );
+  };
+  // console.log(quizData);
+
+  const handleSubmit = () => {
+    setFormSubmitted(true);
+    setCal(true);
   };
 
   return (
@@ -54,7 +78,7 @@ function Questions() {
               </Link>
 
               <div className="flex flex-col gap-4">
-                {data.map((d, index) => (
+                {quizData.map((d, index) => (
                   <div className="" key={index}>
                     <div className="flex justify-between text-base bg-gray-200 pl-2 py-1 rounded-md">
                       <h2 className=" font-semibold  capitalize">
@@ -87,9 +111,13 @@ function Questions() {
                               <div className="flex gap-2 items-center capitalize">
                                 <input
                                   type="radio"
-                                  checked={selectedAnswer === opt.value}
+                                  checked={d.selectedAnswer === opt.value}
                                   value={opt.value}
-                                  onChange={(e) => checkAnswer(e, d.answer)}
+                                  // onChange={(e) => checkAnswer(e, d.answer)}
+                                  onChange={(e) =>
+                                    handleOptionChange(e.target.value, d._id)
+                                  }
+                                  disabled={isFormSubmitted}
                                 />
                                 <span>{opt.value}</span>
                               </div>
@@ -144,18 +172,38 @@ function Questions() {
                       </div>
                     )}
 
-                    <details>
-                      <summary className="border border-gray-400 p-1 w-40 flex justify-center items-center rounded mt-4 font-bold">
-                        ▶️ Show Answer
-                      </summary>
-                      <div className="">
-                        <p className="pl-6 font-bold capitalize">
-                          Answer : {d.answer}
-                        </p>
-                      </div>
-                    </details>
+                    {cal &&
+                      d?.selectedAnswer &&
+                      (d.answer === d.selectedAnswer ? (
+                        <h1 className="text-green-500 font-semibold ">
+                          Correct Anser : {d.answer}
+                        </h1>
+                      ) : (
+                        <>
+                          <h1 className="text-red-500 font-semibold">
+                            Wrong Answer : {d.selectedAnswer}
+                          </h1>
+                          <h1 className="text-green-500 font-semibold ">
+                            Correct Answer : {d.answer}
+                          </h1>
+                        </>
+                      ))}
                   </div>
                 ))}
+
+                <div className="flex justify-center">
+                  <button
+                    disabled={isFormSubmitted}
+                    onClick={() => handleSubmit()}
+                    className={
+                      isFormSubmitted
+                        ? "bg-gray-500 text-white rounded w-36 h-8 flex justify-center items-center"
+                        : "bg-blue-500 text-white rounded w-36 h-8 flex justify-center items-center cursor-pointer"
+                    }
+                  >
+                    Submit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
