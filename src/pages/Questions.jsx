@@ -60,21 +60,23 @@ function Questions() {
   };
   // console.log(quizData);
 
-  const handleSubmit = async () => {
+  const handleSubmitform = async () => {
     setFormSubmitted(true);
     setCal(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
 
-      const res = await AddFeedback(formData);
-      console.log(res);
-      setSelectedFile(null);
-      alert("File uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("Error uploading file");
+        const res = await AddFeedback(formData);
+        console.log(res);
+        setSelectedFile(null);
+        alert("File uploaded successfully");
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error uploading file");
+      }
     }
   };
 
@@ -218,7 +220,7 @@ function Questions() {
                 <div className="flex justify-center">
                   <button
                     // disabled={isFormSubmitted}
-                    onClick={() => handleSubmit()}
+                    onClick={() => handleSubmitform()}
                     className={
                       "bg-blue-500 text-white rounded w-36 h-8 flex justify-center items-center cursor-pointer"
                     }
