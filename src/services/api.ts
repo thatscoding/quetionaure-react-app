@@ -40,3 +40,23 @@ export const UpdateQuestion = async (data: any, id: string) => {
         console.log(error);
     }
 };
+
+export const AddFeedback = async (data: any) => {
+    try {
+        return await axios.post(`http://localhost:8000/v1/feedbacks/add`, data, {
+            headers: {
+                "content-type": "multipart/form-data",
+            },
+        });
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const AllFeedbacks = async () => {
+    try {
+        return await axios.get(`http://localhost:8000/v1/feedbacks/all`);
+    } catch (error) {
+        console.log(error);
+    }
+};

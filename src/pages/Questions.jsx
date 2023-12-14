@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DeleteQuestion, GetAllQuestions } from "../services/api";
+import { AddFeedback, DeleteQuestion, GetAllQuestions } from "../services/api";
 import { Link } from "react-router-dom";
 import HashLoader from "react-spinners/HashLoader";
 import { MdDeleteForever } from "react-icons/md";
@@ -12,6 +12,7 @@ function Questions() {
   const [isFormSubmitted, setFormSubmitted] = useState(false);
   const [refetch, setRefetch] = useState(true);
   const [cal, setCal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleAnserChange = (event) => {
     setSelectedAnswer(event.target.value);
@@ -26,6 +27,12 @@ function Questions() {
     }
     getData();
   }, [refetch]);
+
+  const handleFileChange = (event) => {
+    // Get the selected file
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
 
   const deleteQuestion = async (id) => {
     console.log(id);
@@ -53,9 +60,22 @@ function Questions() {
   };
   // console.log(quizData);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setFormSubmitted(true);
     setCal(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const res = await AddFeedback(formData);
+      console.log(res);
+      setSelectedFile(null);
+      alert("File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Error uploading file");
+    }
   };
 
   return (
@@ -168,7 +188,11 @@ function Questions() {
 
                     {d.type == "uploadFile" && (
                       <div className="border border-gray-500 rounded px-2 py-1">
-                        <input type="file" />
+                        <input
+                          type="file"
+                          onChange={handleFileChange}
+                          name="avatar"
+                        />
                       </div>
                     )}
 
@@ -193,12 +217,10 @@ function Questions() {
 
                 <div className="flex justify-center">
                   <button
-                    disabled={isFormSubmitted}
+                    // disabled={isFormSubmitted}
                     onClick={() => handleSubmit()}
                     className={
-                      isFormSubmitted
-                        ? "bg-gray-500 text-white rounded w-36 h-8 flex justify-center items-center"
-                        : "bg-blue-500 text-white rounded w-36 h-8 flex justify-center items-center cursor-pointer"
+                      "bg-blue-500 text-white rounded w-36 h-8 flex justify-center items-center cursor-pointer"
                     }
                   >
                     Submit
