@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import HashLoader from "react-spinners/HashLoader";
 import { MdDeleteForever } from "react-icons/md";
 import { RiFileEditFill } from "react-icons/ri";
+import { useForm } from "react-hook-form";
 
 function Questions() {
   const [quizData, setQuizData] = useState([]);
@@ -13,7 +14,9 @@ function Questions() {
   const [refetch, setRefetch] = useState(true);
   const [cal, setCal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedDate, setSelectedDate] = useState("");
 
+  const [checkboxes, setCheckboxes] = useState([]);
   const handleAnserChange = (event) => {
     setSelectedAnswer(event.target.value);
   };
@@ -27,6 +30,64 @@ function Questions() {
     }
     getData();
   }, [refetch]);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: {},
+  } = useForm();
+
+  const onSubmit = handleSubmit(async (data) => {
+    console.log(data);
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    const isValid = emailRegex.test(data.email);
+
+    if (data.email) {
+      if (!isValid) {
+        setValue("email", "");
+        console.log(data.email);
+        alert("Invalid email address. Please enter a valid email.");
+        console.log(data.email);
+      } else {
+        alert("Email is valid!");
+      }
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    // formData.append("data", newData);
+
+    console.log(formData);
+
+    setFormSubmitted(true);
+    setCal(true);
+
+    if (selectedFile) {
+      try {
+        const res = await AddFeedback(formData);
+        console.log(res);
+        setSelectedFile(null);
+        alert("File uploaded successfully");
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error uploading file");
+      }
+    }
+
+    // console.log(selectedQueType);
+    // const res = await AddNewQuestion(data);
+    // console.log(res);
+    // reset();
+    // setselectedQueType(null);
+    // setSelectedSeqeunce(null);
+    // setAnswer(null);
+    // setselectedRequirement(null);
+    // alert("Successfully added");
+    // navigate("/");
+  });
 
   const handleFileChange = (event) => {
     // Get the selected file
@@ -48,7 +109,8 @@ function Questions() {
     setSelectedAnswer((prevSelectedAnswer) => [...prevSelectedAnswer, ans]);
   };
 
-  const handleOptionChange = (selectedOption, questionId) => {
+  const handleOptionChange = (selectedOption, questionId, questiontitle) => {
+    setValue(questiontitle, selectedOption);
     console.log(selectedOption, questionId);
     setQuizData((prevQuizData) =>
       prevQuizData.map((question) =>
@@ -60,25 +122,35 @@ function Questions() {
   };
   // console.log(quizData);
 
-  const handleSubmitform = async () => {
-    setFormSubmitted(true);
-    setCal(true);
+  // handle checkbox
 
-    if (selectedFile) {
-      try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-
-        const res = await AddFeedback(formData);
-        console.log(res);
-        setSelectedFile(null);
-        alert("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Error uploading file");
-      }
-    }
+  const handleCheckboxChange = (checkboxName, fieldname) => {
+    setCheckboxes({
+      ...checkboxes,
+      [checkboxName]: fieldname,
+    });
   };
+
+  console.log(checkboxes);
+  // const handleSubmitform = async () => {
+  //   setFormSubmitted(true);
+  //   setCal(true);
+
+  //   if (selectedFile) {
+  //     try {
+  //       const formData = new FormData();
+  //       formData.append("file", selectedFile);
+
+  //       const res = await AddFeedback(formData);
+  //       console.log(res);
+  //       setSelectedFile(null);
+  //       alert("File uploaded successfully");
+  //     } catch (error) {
+  //       console.error("Error uploading file:", error);
+  //       alert("Error uploading file");
+  //     }
+  //   }
+  // };
 
   return (
     <>
@@ -137,8 +209,13 @@ function Questions() {
                                   value={opt.value}
                                   // onChange={(e) => checkAnswer(e, d.answer)}
                                   onChange={(e) =>
-                                    handleOptionChange(e.target.value, d._id)
+                                    handleOptionChange(
+                                      e.target.value,
+                                      d._id,
+                                      d.title
+                                    )
                                   }
+                                  required
                                   disabled={isFormSubmitted}
                                 />
                                 <span>{opt.value}</span>
@@ -155,7 +232,14 @@ function Questions() {
                           {d.options.map((opt, index) => (
                             <div className=" p-4 text-center" key={index}>
                               <div className="flex gap-2 items-center capitalize">
-                                <input type="checkbox" />
+                                <input
+                                  type="checkbox"
+                                  value={opt.value}
+                                  onChange={() =>
+                                    handleCheckboxChange(opt.value, d.title)
+                                  }
+                                  required
+                                />
                                 <span>{opt.value}</span>
                               </div>
                             </div>
@@ -166,7 +250,13 @@ function Questions() {
 
                     {d.type == "text" && (
                       <div className="border border-gray-500 rounded px-2 py-1">
-                        <input type="text" placeholder="text" />
+                        <input
+                          type="text"
+                          placeholder="text"
+                          {...register(`${d.title}`)}
+                          className="w-full py-1 pl-2"
+                          required
+                        />
                       </div>
                     )}
 
@@ -178,13 +268,21 @@ function Questions() {
                           cols="30"
                           rows="3"
                           placeholder="textArea"
+                          className="w-full py-1 pl-2"
+                          {...register(`${d.title}`)}
+                          required
                         ></textarea>
                       </div>
                     )}
 
                     {d.type == "date" && (
                       <div className="border border-gray-500 rounded px-2 py-1">
-                        <input type="date" />
+                        <input
+                          type="date"
+                          value={selectedDate}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                          required
+                        />
                       </div>
                     )}
 
@@ -194,6 +292,7 @@ function Questions() {
                           type="file"
                           onChange={handleFileChange}
                           name="avatar"
+                          required
                         />
                       </div>
                     )}
@@ -220,7 +319,7 @@ function Questions() {
                 <div className="flex justify-center">
                   <button
                     // disabled={isFormSubmitted}
-                    onClick={() => handleSubmitform()}
+                    onClick={() => onSubmit()}
                     className={
                       "bg-blue-500 text-white rounded w-36 h-8 flex justify-center items-center cursor-pointer"
                     }
